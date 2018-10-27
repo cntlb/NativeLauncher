@@ -15,17 +15,15 @@ class MainActivity : NativeActivity() {
     private lateinit var so: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        nativeConfig = NativeConfig.create(this)
         // copy so to internal directory
         val mcpeContext = createPackageContext("com.example.native_activity", CONTEXT_IGNORE_SECURITY)
         soDir = getDir("patched", Context.MODE_PRIVATE)
         so = File(soDir, "libnative.so")
-        if(!soDir.exists())
-            File(mcpeContext.applicationInfo.nativeLibraryDir).copyRecursively(soDir, true)
+        File(mcpeContext.applicationInfo.nativeLibraryDir).copyRecursively(soDir, true)
 
-        // replace PackageManager
+        nativeConfig = NativeConfig.create(this, soDir)
         with(nativeConfig!!) {
-            addLibraryPath(soDir)
+            addLibraryPath()
             setFakeManager(true)
             super.onCreate(savedInstanceState)
             setFakeManager(false)
@@ -33,6 +31,8 @@ class MainActivity : NativeActivity() {
 
         initPatching()
         initHooks(so.absolutePath)
+
+        //hook examples
         Log.e(javaClass.simpleName, getStringUTF())
         Log.e(javaClass.simpleName, "1+2=" + add(1, 2))
     }
@@ -47,18 +47,13 @@ class MainActivity : NativeActivity() {
     }
 
     @Throws(Exception::class)
-    fun initPatching() {
+    private fun initPatching() {
         System.loadLibrary("mcpelauncher_tinysubstrate")
         System.loadLibrary("native")
         System.loadLibrary("test")
-        if (!MaraudersMap.initPatching(this, findMinecraftLibLength())) {
+        if (!MaraudersMap.initPatching(this, so.length())) {
             println("Well, that sucks!")
         }
-    }
-
-    @Throws(Exception::class)
-    fun findMinecraftLibLength(): Long {
-        return so.length()
     }
 
     override fun onDestroy() {

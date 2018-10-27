@@ -7,11 +7,10 @@ import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 
 class NativeConfigImpl24 extends NativeConfigBase {
-    NativeConfigImpl24(Context context) {
-        super(context);
+    NativeConfigImpl24(Context context, File path) {
+        super(context, path);
     }
 
     /**
@@ -35,7 +34,7 @@ class NativeConfigImpl24 extends NativeConfigBase {
      * }
      * </pre>
      */
-    public void addLibraryPath(File path) {
+    public void addLibraryPath() {
         try {
             Context context = mContext;
             // DexPathList pathList = context.getClassLoader().pathList

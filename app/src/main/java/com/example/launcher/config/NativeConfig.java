@@ -16,12 +16,17 @@ public interface NativeConfig {
         return pm;
     }
 
-    void addLibraryPath(File path);
+    void addLibraryPath();
 
-    static NativeConfig create(Context context) {
+    static NativeConfig create(Context context, File path) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return new NativeConfigImpl24(context);
+            return new NativeConfigImpl24(context, path);
         }
-        return new NativeConfigImplBase(context);
+        return new NativeConfigImplBase(context, path);
     }
+
+    static NativeConfig create(Context context, String path) {
+        return create(context, new File(path));
+    }
+
 }

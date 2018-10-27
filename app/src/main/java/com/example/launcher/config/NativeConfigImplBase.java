@@ -9,10 +9,9 @@ import java.util.ArrayList;
 
 class NativeConfigImplBase extends NativeConfigBase {
     private boolean mFakeManager;
-    private File path;
 
-    NativeConfigImplBase(Context context) {
-        super(context);
+    NativeConfigImplBase(Context context, File path) {
+        super(context, path);
     }
 
     @Override
@@ -26,9 +25,22 @@ class NativeConfigImplBase extends NativeConfigBase {
         return pm;
     }
 
+    /**
+     * android-20
+     * <pre>
+     *      public class dalvik.system.BaseDexClassLoader extends ClassLoader {
+     *          private final DexPathList pathList;
+     *          public String findLibrary(String name)
+     *      }
+     *
+     *      final class dalvik.system.DexPathList {
+     *          private final File[] nativeLibraryDirectories;
+     *
+     *      }
+     * </pre>
+     */
     @Override
-    public void addLibraryPath(File path) {
-        this.path = path;
+    public void addLibraryPath() {
         try {
             ClassLoader classLoader = mContext.getClassLoader();
             Field field = Utils.getDeclaredFieldRecursive(classLoader.getClass(), "pathList");
@@ -46,15 +58,13 @@ class NativeConfigImplBase extends NativeConfigBase {
                     natfield.set(pathListObj, newList);
                 }
             }
-
-        } catch (Exception e) {
-
+        } catch (Exception ignore) {
         }
     }
 
-    private File[] addToFileList(File[] files, File toAdd) {
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].equals(toAdd)) {
+    private static File[] addToFileList(File[] files, File toAdd) {
+        for (File file : files) {
+            if (file.equals(toAdd)) {
                 return files;
             }
         }
